@@ -1,0 +1,26 @@
+# Android / Gradle
+*.iml
+.gradle
+.kotlin
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+hs_err_pid*.log
+replay_pid*.log
+
+# Backend (Python)
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Word abierto
+~$*
+
+# Documentación y vistas (se entregan aparte, no van en el repo)
+/docs/
