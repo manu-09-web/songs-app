@@ -10,7 +10,7 @@ val localProperties = Properties().apply {
     val archivo = rootProject.file("local.properties")
     if (archivo.exists()) archivo.inputStream().use { load(it) }
 }
-val apiUrl: String = localProperties.getProperty("api.url", "http://10.0.2.2:8000/api/v1/")
+val apiUrl: String = localProperties.getProperty("api.url", "https://songsapp.duckdns.org/api/v1/")
 
 android {
     namespace = "com.upchiapas.songsapp"
