@@ -10,6 +10,7 @@ import com.upchiapas.songsapp.auth.domain.repository.AuthRepository
 import com.upchiapas.songsapp.canciones.domain.model.EstadoCancion
 import com.upchiapas.songsapp.canciones.domain.repository.CancionRepository
 import com.upchiapas.songsapp.canciones.presentation.screens.RepertorioUiState
+import com.upchiapas.songsapp.core.network.ApiException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +34,19 @@ class RepertorioViewModel(
                     _uiState.update { it.copy(cargando = false, canciones = canciones) }
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(cargando = false, error = error.message) }
+                    val codigo = (error as? ApiException)?.codigo
+                    if (codigo == "NO_AUTENTICADO") {
+                        authRepository.cerrarSesion()
+                        _uiState.update { it.copy(cargando = false, sesionVencida = true) }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                cargando = false,
+                                error = error.message,
+                                errorSinConexion = codigo == "SIN_CONEXION"
+                            )
+                        }
+                    }
                 }
         }
     }

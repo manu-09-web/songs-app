@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -19,7 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.MusicNote
+import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,24 +36,32 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.upchiapas.songsapp.canciones.presentation.components.BotonContorno
+import com.upchiapas.songsapp.canciones.presentation.components.CancionCargando
 import com.upchiapas.songsapp.canciones.presentation.components.FiltrosEstado
+import com.upchiapas.songsapp.canciones.presentation.components.MensajeLista
+import com.upchiapas.songsapp.canciones.presentation.components.ResumenCargando
 import com.upchiapas.songsapp.canciones.presentation.components.ResumenRepertorio
 import com.upchiapas.songsapp.canciones.presentation.components.TarjetaCancion
 import com.upchiapas.songsapp.canciones.presentation.viewmodels.RepertorioViewModel
 import com.upchiapas.songsapp.ui.components.BarraAzul
 import com.upchiapas.songsapp.ui.components.BotonCuadro
+import com.upchiapas.songsapp.ui.components.BotonPrincipal
 import com.upchiapas.songsapp.ui.components.TarjetaEncimada
+import com.upchiapas.songsapp.ui.theme.AzulSuave
 import com.upchiapas.songsapp.ui.theme.AzulTexto
 import com.upchiapas.songsapp.ui.theme.Blanco
 
 @Composable
 fun RepertorioPage(
     onSesionCerrada: () -> Unit,
+    onSesionVencida: () -> Unit,
     onAbrirCancion: (Int) -> Unit,
     onAgregar: () -> Unit,
     viewModel: RepertorioViewModel = viewModel(factory = RepertorioViewModel.Factory)
@@ -63,10 +76,16 @@ fun RepertorioPage(
         if (uiState.sesionCerrada) onSesionCerrada()
     }
 
+    LaunchedEffect(uiState.sesionVencida) {
+        if (uiState.sesionVencida) onSesionVencida()
+    }
+
+    val mostrarBotonAgregar = !uiState.cargando && uiState.error == null && uiState.canciones.isNotEmpty()
+
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            if (mostrarBotonAgregar) ExtendedFloatingActionButton(
                 onClick = onAgregar,
                 shape = RoundedCornerShape(18.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -92,30 +111,81 @@ fun RepertorioPage(
                     onCerrarSesion = viewModel::cerrarSesion
                 )
             }
-            item {
-                TarjetaEncimada {
-                    ResumenRepertorio(
-                        total = uiState.canciones.size,
-                        dominadas = uiState.dominadas,
-                        aMedias = uiState.aMedias
-                    )
+            when {
+                uiState.cargando -> {
+                    item { TarjetaEncimada { ResumenCargando() } }
+                    item { Spacer(modifier = Modifier.height(24.dp)) }
+                    items(5) {
+                        CancionCargando(modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+                    }
                 }
-            }
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                FiltrosEstado(
-                    seleccionado = uiState.filtro,
-                    total = uiState.canciones.size,
-                    onSeleccionar = viewModel::onFiltroChange
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            items(uiState.cancionesFiltradas, key = { it.id }) { cancion ->
-                TarjetaCancion(
-                    cancion = cancion,
-                    onClick = { onAbrirCancion(cancion.id) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
-                )
+
+                uiState.error != null -> item {
+                    TarjetaEncimada {
+                        MensajeLista(
+                            icono = if (uiState.errorSinConexion) Icons.Outlined.WifiOff else Icons.Outlined.ErrorOutline,
+                            colorIcono = MaterialTheme.colorScheme.error,
+                            fondoIcono = MaterialTheme.colorScheme.errorContainer,
+                            titulo = if (uiState.errorSinConexion) "No se pudo conectar" else "No se pudo cargar tu repertorio",
+                            mensaje = if (uiState.errorSinConexion) "Revisa tu internet e intenta de nuevo." else uiState.error.orEmpty()
+                        ) {
+                            BotonContorno(texto = "Reintentar", icono = Icons.Rounded.Refresh, onClick = viewModel::cargarCanciones)
+                        }
+                    }
+                }
+
+                uiState.canciones.isEmpty() -> item {
+                    TarjetaEncimada {
+                        MensajeLista(
+                            icono = Icons.Outlined.MusicNote,
+                            colorIcono = MaterialTheme.colorScheme.primary,
+                            fondoIcono = AzulSuave,
+                            titulo = "Agrega tu primera canción",
+                            mensaje = "Guarda sus acordes, su letra y qué tanto la domina la banda."
+                        ) {
+                            BotonPrincipal(texto = "Agregar canción", onClick = onAgregar, icono = Icons.Rounded.Add)
+                        }
+                    }
+                }
+
+                else -> {
+                    item {
+                        TarjetaEncimada {
+                            ResumenRepertorio(
+                                total = uiState.canciones.size,
+                                dominadas = uiState.dominadas,
+                                aMedias = uiState.aMedias
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        FiltrosEstado(
+                            seleccionado = uiState.filtro,
+                            total = uiState.canciones.size,
+                            onSeleccionar = viewModel::onFiltroChange
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    items(uiState.cancionesFiltradas, key = { it.id }) { cancion ->
+                        TarjetaCancion(
+                            cancion = cancion,
+                            onClick = { onAbrirCancion(cancion.id) },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
+                        )
+                    }
+                    if (uiState.cancionesFiltradas.isEmpty()) item {
+                        Text(
+                            text = "No hay canciones con este estado.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp)
+                        )
+                    }
+                }
             }
         }
     }

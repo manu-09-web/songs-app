@@ -47,11 +47,16 @@ import com.upchiapas.songsapp.ui.theme.Blanco
 
 @Composable
 fun LoginPage(
+    aviso: String?,
     onSesionIniciada: () -> Unit,
     onIrARegistro: () -> Unit,
     viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(aviso) {
+        if (aviso != null) viewModel.mostrarAviso(aviso)
+    }
 
     LaunchedEffect(uiState.sesionIniciada) {
         if (uiState.sesionIniciada) onSesionIniciada()

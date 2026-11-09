@@ -31,6 +31,14 @@ class LoginViewModel(
         _uiState.update { it.copy(password = valor, errorPassword = null, errorGeneral = null) }
     }
 
+    private var avisoMostrado = false
+
+    fun mostrarAviso(mensaje: String) {
+        if (avisoMostrado) return
+        avisoMostrado = true
+        _uiState.update { it.copy(errorGeneral = mensaje) }
+    }
+
     fun onCambiarVisibilidad() {
         _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
     }
