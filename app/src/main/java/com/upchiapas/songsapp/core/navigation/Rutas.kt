@@ -13,3 +13,6 @@ object RepertorioRuta
 
 @Serializable
 data class DetalleRuta(val id: Int)
+
+@Serializable
+data class FormularioRuta(val id: Int? = null)

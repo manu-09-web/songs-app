@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import com.upchiapas.songsapp.auth.presentation.screens.LoginPage
 import com.upchiapas.songsapp.auth.presentation.screens.RegistroPage
 import com.upchiapas.songsapp.canciones.presentation.screens.DetallePage
+import com.upchiapas.songsapp.canciones.presentation.screens.FormularioPage
 import com.upchiapas.songsapp.canciones.presentation.screens.RepertorioPage
 
 @Composable
@@ -53,14 +54,25 @@ fun AppNavHost(haySesion: Boolean) {
                     }
                 },
                 onAbrirCancion = { id -> navController.navigate(DetalleRuta(id)) },
-                onAgregar = { }
+                onAgregar = { navController.navigate(FormularioRuta()) }
             )
         }
         composable<DetalleRuta> {
             DetallePage(
                 onRegresar = { navController.popBackStack() },
-                onEditar = { },
+                onEditar = { id -> navController.navigate(FormularioRuta(id)) },
                 onEliminada = { navController.popBackStack() },
+                onSesionVencida = {
+                    navController.navigate(LoginRuta(sesionVencida = true)) {
+                        popUpTo<RepertorioRuta> { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable<FormularioRuta> {
+            FormularioPage(
+                onCerrar = { navController.popBackStack() },
+                onGuardada = { navController.popBackStack() },
                 onSesionVencida = {
                     navController.navigate(LoginRuta(sesionVencida = true)) {
                         popUpTo<RepertorioRuta> { inclusive = true }

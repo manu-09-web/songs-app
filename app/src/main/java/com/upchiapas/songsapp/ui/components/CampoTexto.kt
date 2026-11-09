@@ -36,7 +36,9 @@ fun CampoTexto(
     tipoTeclado: KeyboardType = KeyboardType.Text,
     esPassword: Boolean = false,
     passwordVisible: Boolean = false,
-    onCambiarVisibilidad: () -> Unit = {}
+    onCambiarVisibilidad: () -> Unit = {},
+    sufijo: String? = null,
+    lineas: Int = 1
 ) {
     val colorEtiqueta = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
 
@@ -47,8 +49,10 @@ fun CampoTexto(
             value = valor,
             onValueChange = onValorChange,
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
+            singleLine = lineas == 1,
+            minLines = lineas,
             isError = error != null,
+            suffix = sufijo?.let { { Text(text = it, style = MaterialTheme.typography.bodyMedium) } },
             shape = RoundedCornerShape(12.dp),
             textStyle = MaterialTheme.typography.bodyLarge,
             leadingIcon = { Icon(imageVector = icono, contentDescription = null) },
