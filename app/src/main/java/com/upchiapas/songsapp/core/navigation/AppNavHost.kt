@@ -1,6 +1,10 @@
 package com.upchiapas.songsapp.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -11,9 +15,17 @@ import com.upchiapas.songsapp.canciones.presentation.screens.DetallePage
 import com.upchiapas.songsapp.canciones.presentation.screens.FormularioPage
 import com.upchiapas.songsapp.canciones.presentation.screens.RepertorioPage
 
+private const val MENSAJE = "mensaje"
+
 @Composable
 fun AppNavHost(haySesion: Boolean) {
     val navController = rememberNavController()
+
+    val irALoginPorSesionVencida = {
+        navController.navigate(LoginRuta(sesionVencida = true)) {
+            popUpTo<RepertorioRuta> { inclusive = true }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -41,44 +53,48 @@ fun AppNavHost(haySesion: Boolean) {
                 onRegresar = { navController.popBackStack() }
             )
         }
-        composable<RepertorioRuta> {
+        composable<RepertorioRuta> { entrada ->
+            val mensaje by entrada.mensaje()
             RepertorioPage(
                 onSesionCerrada = {
                     navController.navigate(LoginRuta()) {
                         popUpTo<RepertorioRuta> { inclusive = true }
                     }
                 },
-                onSesionVencida = {
-                    navController.navigate(LoginRuta(sesionVencida = true)) {
-                        popUpTo<RepertorioRuta> { inclusive = true }
-                    }
-                },
+                onSesionVencida = irALoginPorSesionVencida,
                 onAbrirCancion = { id -> navController.navigate(DetalleRuta(id)) },
-                onAgregar = { navController.navigate(FormularioRuta()) }
+                onAgregar = { navController.navigate(FormularioRuta()) },
+                mensaje = mensaje,
+                onMensajeMostrado = { entrada.savedStateHandle[MENSAJE] = null }
             )
         }
-        composable<DetalleRuta> {
+        composable<DetalleRuta> { entrada ->
+            val mensaje by entrada.mensaje()
             DetallePage(
                 onRegresar = { navController.popBackStack() },
                 onEditar = { id -> navController.navigate(FormularioRuta(id)) },
-                onEliminada = { navController.popBackStack() },
-                onSesionVencida = {
-                    navController.navigate(LoginRuta(sesionVencida = true)) {
-                        popUpTo<RepertorioRuta> { inclusive = true }
-                    }
-                }
+                onEliminada = { navController.regresarConMensaje("Canción eliminada") },
+                onSesionVencida = irALoginPorSesionVencida,
+                mensaje = mensaje,
+                onMensajeMostrado = { entrada.savedStateHandle[MENSAJE] = null }
             )
         }
         composable<FormularioRuta> {
             FormularioPage(
                 onCerrar = { navController.popBackStack() },
-                onGuardada = { navController.popBackStack() },
-                onSesionVencida = {
-                    navController.navigate(LoginRuta(sesionVencida = true)) {
-                        popUpTo<RepertorioRuta> { inclusive = true }
-                    }
-                }
+                onGuardada = { navController.regresarConMensaje("Canción guardada") },
+                onSesionVencida = irALoginPorSesionVencida
             )
         }
     }
+}
+
+@Composable
+private fun NavBackStackEntry.mensaje() =
+    savedStateHandle.getStateFlow<String?>(MENSAJE, null).collectAsStateWithLifecycle()
+
+// Deja el mensaje en la pantalla anterior para que lo muestre al regresar.
+private fun NavController.regresarConMensaje(mensaje: String) {
+    previousBackStackEntry?.savedStateHandle?.set(MENSAJE, mensaje)
+    popBackStack()
 }

@@ -59,6 +59,10 @@ import com.upchiapas.songsapp.canciones.presentation.components.colorFondo
 import com.upchiapas.songsapp.canciones.presentation.components.colorTexto
 import com.upchiapas.songsapp.canciones.presentation.components.formatearDuracion
 import com.upchiapas.songsapp.canciones.presentation.viewmodels.DetalleViewModel
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.remember
+import com.upchiapas.songsapp.ui.components.AvisoHost
+import com.upchiapas.songsapp.ui.components.MostrarAviso
 import com.upchiapas.songsapp.ui.components.BarraAzul
 import com.upchiapas.songsapp.ui.components.BotonCuadro
 import com.upchiapas.songsapp.ui.components.BotonPrincipal
@@ -80,9 +84,13 @@ fun DetallePage(
     onEditar: (Int) -> Unit,
     onEliminada: () -> Unit,
     onSesionVencida: () -> Unit,
+    mensaje: String?,
+    onMensajeMostrado: () -> Unit,
     viewModel: DetalleViewModel = viewModel(factory = DetalleViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val avisos = remember { SnackbarHostState() }
+    MostrarAviso(mensaje = mensaje, estado = avisos, onMostrado = onMensajeMostrado)
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         viewModel.cargar()
@@ -185,6 +193,16 @@ fun DetallePage(
                 }
             }
         }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AvisoHost(
+            estado = avisos,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 84.dp)
+        )
     }
 
     if (uiState.mostrarConfirmacion && cancion != null) {

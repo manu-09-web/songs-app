@@ -50,6 +50,10 @@ import com.upchiapas.songsapp.canciones.presentation.components.ResumenCargando
 import com.upchiapas.songsapp.canciones.presentation.components.ResumenRepertorio
 import com.upchiapas.songsapp.canciones.presentation.components.TarjetaCancion
 import com.upchiapas.songsapp.canciones.presentation.viewmodels.RepertorioViewModel
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.remember
+import com.upchiapas.songsapp.ui.components.AvisoHost
+import com.upchiapas.songsapp.ui.components.MostrarAviso
 import com.upchiapas.songsapp.ui.components.BarraAzul
 import com.upchiapas.songsapp.ui.components.BotonCuadro
 import com.upchiapas.songsapp.ui.components.BotonPrincipal
@@ -64,9 +68,13 @@ fun RepertorioPage(
     onSesionVencida: () -> Unit,
     onAbrirCancion: (Int) -> Unit,
     onAgregar: () -> Unit,
+    mensaje: String?,
+    onMensajeMostrado: () -> Unit,
     viewModel: RepertorioViewModel = viewModel(factory = RepertorioViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val avisos = remember { SnackbarHostState() }
+    MostrarAviso(mensaje = mensaje, estado = avisos, onMostrado = onMensajeMostrado)
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         viewModel.cargarCanciones()
@@ -84,6 +92,7 @@ fun RepertorioPage(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
+        snackbarHost = { AvisoHost(estado = avisos, modifier = Modifier.navigationBarsPadding()) },
         floatingActionButton = {
             if (mostrarBotonAgregar) ExtendedFloatingActionButton(
                 onClick = onAgregar,
