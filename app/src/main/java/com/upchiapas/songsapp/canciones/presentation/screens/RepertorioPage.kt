@@ -88,13 +88,11 @@ fun RepertorioPage(
         if (uiState.sesionVencida) onSesionVencida()
     }
 
-    val mostrarBotonAgregar = !uiState.cargando && uiState.error == null && uiState.canciones.isNotEmpty()
-
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { AvisoHost(estado = avisos, modifier = Modifier.navigationBarsPadding()) },
         floatingActionButton = {
-            if (mostrarBotonAgregar) ExtendedFloatingActionButton(
+            if (uiState.mostrarBotonAgregar) ExtendedFloatingActionButton(
                 onClick = onAgregar,
                 shape = RoundedCornerShape(18.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -135,8 +133,8 @@ fun RepertorioPage(
                             icono = if (uiState.errorSinConexion) Icons.Outlined.WifiOff else Icons.Outlined.ErrorOutline,
                             colorIcono = MaterialTheme.colorScheme.error,
                             fondoIcono = MaterialTheme.colorScheme.errorContainer,
-                            titulo = if (uiState.errorSinConexion) "No se pudo conectar" else "No se pudo cargar tu repertorio",
-                            mensaje = if (uiState.errorSinConexion) "Revisa tu internet e intenta de nuevo." else uiState.error.orEmpty()
+                            titulo = uiState.tituloError,
+                            mensaje = uiState.mensajeError
                         ) {
                             BotonContorno(texto = "Reintentar", icono = Icons.Rounded.Refresh, onClick = viewModel::cargarCanciones)
                         }

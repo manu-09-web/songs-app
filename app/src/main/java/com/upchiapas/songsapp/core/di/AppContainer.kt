@@ -48,10 +48,10 @@ class AppContainer(context: Context) {
     }
 
     val authRepository: AuthRepository by lazy {
-        AuthRepositoryImpl(retrofit.create(AuthApiService::class.java), sessionManager)
+        AuthRepositoryImpl(retrofit.create(AuthApiService::class.java), sessionManager, json)
     }
 
     val cancionRepository: CancionRepository by lazy {
-        CancionRepositoryImpl(retrofit.create(CancionApiService::class.java))
+        CancionRepositoryImpl(retrofit.create(CancionApiService::class.java), json)
     }
 }

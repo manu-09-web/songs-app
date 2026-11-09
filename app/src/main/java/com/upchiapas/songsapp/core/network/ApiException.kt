@@ -12,19 +12,17 @@ class ApiException(
     val errores: Map<String, String> = emptyMap()
 ) : Exception(message)
 
-private val json = Json { ignoreUnknownKeys = true }
-
-suspend fun <T> llamarApi(bloque: suspend () -> T): Result<T> {
+suspend fun <T> llamarApi(json: Json, bloque: suspend () -> T): Result<T> {
     return try {
         Result.success(bloque())
     } catch (e: HttpException) {
-        Result.failure(withContext(Dispatchers.IO) { e.aApiException() })
+        Result.failure(withContext(Dispatchers.IO) { e.aApiException(json) })
     } catch (e: IOException) {
         Result.failure(ApiException("SIN_CONEXION", "No se pudo conectar con el servidor"))
     }
 }
 
-private fun HttpException.aApiException(): ApiException {
+private fun HttpException.aApiException(json: Json): ApiException {
     val cuerpo = runCatching { response()?.errorBody()?.string() }.getOrNull()
     val error = cuerpo?.let { runCatching { json.decodeFromString<ErrorDto>(it) }.getOrNull() }
         ?: return ApiException("ERROR_INTERNO", "El servidor tuvo un problema, intenta más tarde")

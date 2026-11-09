@@ -9,18 +9,20 @@ import com.upchiapas.songsapp.auth.domain.model.Usuario
 import com.upchiapas.songsapp.auth.domain.repository.AuthRepository
 import com.upchiapas.songsapp.core.network.llamarApi
 import com.upchiapas.songsapp.core.session.SessionManager
+import kotlinx.serialization.json.Json
 
 class AuthRepositoryImpl(
     private val api: AuthApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val json: Json
 ) : AuthRepository {
 
     override suspend fun iniciarSesion(email: String, password: String): Result<Usuario> =
-        llamarApi { api.iniciarSesion(LoginRequestDto(email.trim(), password)) }
+        llamarApi(json) { api.iniciarSesion(LoginRequestDto(email.trim(), password)) }
             .map { guardar(it) }
 
     override suspend fun registrar(nombre: String, email: String, password: String): Result<Usuario> =
-        llamarApi { api.registrar(RegisterRequestDto(nombre.trim(), email.trim(), password)) }
+        llamarApi(json) { api.registrar(RegisterRequestDto(nombre.trim(), email.trim(), password)) }
             .map { guardar(it) }
 
     override fun haySesion(): Boolean = sessionManager.obtenerToken() != null

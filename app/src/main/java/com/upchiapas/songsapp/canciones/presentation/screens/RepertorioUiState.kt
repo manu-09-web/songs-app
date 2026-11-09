@@ -23,4 +23,13 @@ data class RepertorioUiState(
 
     val aMedias: Int
         get() = canciones.count { it.datos.estado == EstadoCancion.A_MEDIAS }
+
+    val mostrarBotonAgregar: Boolean
+        get() = !cargando && error == null && canciones.isNotEmpty()
+
+    val tituloError: String
+        get() = if (errorSinConexion) "No se pudo conectar" else "No se pudo cargar tu repertorio"
+
+    val mensajeError: String
+        get() = if (errorSinConexion) "Revisa tu internet e intenta de nuevo." else error.orEmpty()
 }
