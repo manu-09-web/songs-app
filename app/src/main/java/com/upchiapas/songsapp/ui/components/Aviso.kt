@@ -7,10 +7,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.upchiapas.songsapp.ui.theme.Texto
+import kotlinx.coroutines.launch
 
 @Composable
 fun AvisoHost(estado: SnackbarHostState, modifier: Modifier = Modifier) {
@@ -26,10 +28,13 @@ fun AvisoHost(estado: SnackbarHostState, modifier: Modifier = Modifier) {
 
 @Composable
 fun MostrarAviso(mensaje: String?, estado: SnackbarHostState, onMostrado: () -> Unit) {
+    val scope = rememberCoroutineScope()
     LaunchedEffect(mensaje) {
         if (mensaje != null) {
+            // Se lanza fuera del efecto: al borrar el mensaje el efecto se reinicia
+            // y, si el aviso viviera dentro de él, se cancelaría antes de verse.
+            scope.launch { estado.showSnackbar(mensaje, actionLabel = "OK", duration = SnackbarDuration.Short) }
             onMostrado()
-            estado.showSnackbar(mensaje, actionLabel = "OK", duration = SnackbarDuration.Short)
         }
     }
 }
