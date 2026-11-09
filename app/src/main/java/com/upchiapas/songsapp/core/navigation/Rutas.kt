@@ -10,3 +10,6 @@ object RegistroRuta
 
 @Serializable
 object RepertorioRuta
+
+@Serializable
+data class DetalleRuta(val id: Int)

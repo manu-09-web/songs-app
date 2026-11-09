@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.upchiapas.songsapp.auth.presentation.screens.LoginPage
 import com.upchiapas.songsapp.auth.presentation.screens.RegistroPage
+import com.upchiapas.songsapp.canciones.presentation.screens.DetallePage
 import com.upchiapas.songsapp.canciones.presentation.screens.RepertorioPage
 
 @Composable
@@ -51,8 +52,20 @@ fun AppNavHost(haySesion: Boolean) {
                         popUpTo<RepertorioRuta> { inclusive = true }
                     }
                 },
-                onAbrirCancion = { },
+                onAbrirCancion = { id -> navController.navigate(DetalleRuta(id)) },
                 onAgregar = { }
+            )
+        }
+        composable<DetalleRuta> {
+            DetallePage(
+                onRegresar = { navController.popBackStack() },
+                onEditar = { },
+                onEliminada = { navController.popBackStack() },
+                onSesionVencida = {
+                    navController.navigate(LoginRuta(sesionVencida = true)) {
+                        popUpTo<RepertorioRuta> { inclusive = true }
+                    }
+                }
             )
         }
     }
