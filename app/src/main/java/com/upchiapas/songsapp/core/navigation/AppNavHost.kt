@@ -42,7 +42,9 @@ fun AppNavHost(haySesion: Boolean) {
                     navController.navigate(LoginRuta) {
                         popUpTo<RepertorioRuta> { inclusive = true }
                     }
-                }
+                },
+                onAbrirCancion = { },
+                onAgregar = { }
             )
         }
     }
