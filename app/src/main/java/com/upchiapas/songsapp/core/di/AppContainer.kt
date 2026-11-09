@@ -5,6 +5,9 @@ import com.upchiapas.songsapp.BuildConfig
 import com.upchiapas.songsapp.auth.data.datasource.AuthApiService
 import com.upchiapas.songsapp.auth.data.repository.AuthRepositoryImpl
 import com.upchiapas.songsapp.auth.domain.repository.AuthRepository
+import com.upchiapas.songsapp.canciones.data.datasource.CancionApiService
+import com.upchiapas.songsapp.canciones.data.repository.CancionRepositoryImpl
+import com.upchiapas.songsapp.canciones.domain.repository.CancionRepository
 import com.upchiapas.songsapp.core.network.AuthInterceptor
 import com.upchiapas.songsapp.core.session.SessionManager
 import com.upchiapas.songsapp.core.session.SharedPreferencesSessionManager
@@ -46,5 +49,9 @@ class AppContainer(context: Context) {
 
     val authRepository: AuthRepository by lazy {
         AuthRepositoryImpl(retrofit.create(AuthApiService::class.java), sessionManager)
+    }
+
+    val cancionRepository: CancionRepository by lazy {
+        CancionRepositoryImpl(retrofit.create(CancionApiService::class.java))
     }
 }
